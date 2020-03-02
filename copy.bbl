@@ -1,0 +1,22 @@
+\begin{thebibliography}{1}
+
+\bibitem{wachinger2012entropy}
+Christian Wachinger and Nassir Navab.
+\newblock Entropy and laplacian images: Structural representations for
+  multi-modal registration.
+\newblock {\em Medical image analysis}, 16(1):1--17, 2012.
+
+\bibitem{zheng2008four}
+Yefeng Zheng, Adrian Barbu, Bogdan Georgescu, Michael Scheuering, and Dorin
+  Comaniciu.
+\newblock Four-chamber heart modeling and automatic segmentation for 3-d
+  cardiac ct volumes using marginal space learning and steerable features.
+\newblock {\em IEEE transactions on medical imaging}, 27(11):1668--1681, 2008.
+
+\bibitem{zhuang2016multi}
+Xiahai Zhuang and Juan Shen.
+\newblock Multi-scale patch and multi-modality atlases for whole heart
+  segmentation of mri.
+\newblock {\em Medical image analysis}, 31:77--87, 2016.
+
+\end{thebibliography}
