@@ -35,7 +35,7 @@
 \section{Introduction}
 Cardiac magnetic resonance imaging (MRI) is a unique non-ionizing radiation technique which provides clear view of heart’s anatomy. The anatomical information of MRI is useful in diagnosing cardiac disease. Whole heart segmentation (WHS) aims to extract the substructures of the heart, commonly including the four chamber blood cavities, the left ventricular myocardium, and sometimes the great vessels as well if they are of interest\cite{zheng2008four}. In order to automatically and accurately extract anatomical information, researchers nowadays are exploring novel algorithms in automatic WHS. 
 
-However, Obtaining fully automatic WHS is arduous due to the low image quality and indistinct boundaries between substructures of the heart in cardiac MRI images. In order to solve this problem, Zhuang et. al\cite{zhuang2016multi} applies multi-modality atlas for whole heart segmentation. They utilize the cardiac CT images to help with the WHS of cardiac MRI images. Since CT is based on a different imaging principle than MRI, CT cardiac image is a good supplementary where the boundary in MRI image is blurry.  
+However, Obtaining fully automatic WHS is arduous due to the low image quality and indistinct boundaries between substructures of the heart in cardiac MRI images. In order to solve this problem, Zhuang et. al\cite{zhuang2016multi} applies multi-modality atlas for whole heart segmentation. They utilize the cardiac CT images to help with the WHS of cardiac MRI images. Since CT is based on a different imaging principle than MRI, CT cardiac image is a good supplementary where the boundary in MRI image is blurry. Meanwhile, Tsaftaris et al.\cite{Tsaftaris2017} provided another approach of using multi-modality cardiac images by using CycleGAN to convert one modality to another.
 
 \section{Implementation of multi-modality}
  Figure \ref{yihao_overview} shows the overview of multi-modality model in Zhuang's work\cite{zhuang2016multi}. The segmentation process is based on weighted label fusion(LWF). The key idea is to find the similarity between the training set and test images, and assign labels from maximum likelihood. The training images include MRI and CT images and are manually labeled with different cardiac regions. Since these images are from different individuals or taken at different perspective, each image should be aligned to a standard cardiac model by affine deformation. The label fusion result from each training image is weighted by the similarity to the target image. In order to have a clearer boundary, the test images are converted into entropy atlases using different patch sizes. These atlases are used as the input of a Gaussian regression model to output the mask of the boundary of heart. Finally, by combining the label fusion result and the mask, the target image is segmented by the LWF model.
@@ -43,10 +43,6 @@ However, Obtaining fully automatic WHS is arduous due to the low image quality a
  The entropy atlas are computed as follows\cite{wachinger2012entropy}. For each pixel in a cardiac image, a local patch centered on the pixel is selected. For each of these patches, one can compute its intensity entropy and store this entropy value in the location of the pixel to create a new image. Large patch size suppresses the fin structure but captures global structural information within a certain vision window, while small patch size provides more local details of the structure. The aim of utilizing different patch scales is to get the advantages of both scales.
  
  
- 
- \section{Discussion}
- The model in Zhang et.al's work\cite{zhuang2016multi} is simple compared with complex data driven deep neural network. From our understanding, the key factor that affects the performance of WHS is whether we can obtain a clear boundary in MRI image. Thus, a GAN model is a more reasonable direction in multi-modality, whose aim is to convert the low quality cardiac images into high quality level. 
-
 \begin{figure}
 	\centering
 	\includegraphics[width=0.4\textwidth]{images/yihao_overview.png}
@@ -54,8 +50,31 @@ However, Obtaining fully automatic WHS is arduous due to the low image quality a
 	\label{yihao_overview}
 \end{figure} 
 
+\begin{figure}
+	\centering
+	\includegraphics[width=0.5\textwidth]{images/Xiangyu_overview.png}
+	\caption{Overview of multi-modality image synthesis}
+	\label{Xiangyu_overview}
+\end{figure} 
 
+\section{Multi-modality Image Synthesis}
+ In Tsaftaris's work\cite{Tsaftaris2017}, CycleGAN is applied to produce synthetic MRI data from CT or to produce synthetic CT data from MRI. The overall procedure that convert CT data to MRI data is shown in Figure \ref{Xiangyu_overview}. The approach consists of two steps: view alignment and transform learning with CycleGAN. 
+ 
+ For view alignment, the purpose is to make the layout of the images (the position and size of the anatomy for example) not informative as to the dataset from which the image came. Preventing this is important in order to ensure the adversarial training is effective, otherwise the discriminator may learn to differentiate between real and synthetic data by attending to structural differences, rather than intensity statistics. However, the alignment only needs to be approximate, and any simple registration approach should suffice.
+ 
+ In the second step, the goal is to transform from MRI to CT while these two modalities of image are unpaired. A recent adversarial approach to address this difficult task is the CycleGAN\cite{zhu2017unpaired}: an adversarialy trained deep network which simultaneously learns transformations between two datasets containing the same information, but differently represented. In this case, the CycleGAN learns to transform a CT image into a synthetic MR image that cannot be recognised as synthetic by a discriminator network. At the same time, the synthetic MR image must be able to be accurately converted back into a CT image, as similar as possible to the original CT image, via another learned transformation. Thus, the synthetic MR image, whilst appearing realistic, must also retain relevant information from the CT. This encourages the synthetic MR to contain the same anatomy as is present in the input CT. 
+ 
+ Initially, Tsaftaris's group applied the CycleGAN directly to the MR and CT images. However, they found that although the resulting images were promising in terms of realism, the myocardium in the synthetic image was often not in the same place as in the input image. To mitigate this issue we included both the mask of the myocardium and the image as two channel inputs to the CycleGAN, such that it learned to transform CT images and their corresponding myocardium segmentation mask into realistic MR images and corresponding segmentation masks. Therefore, the final result is a synthetic labelled data set of MR cardiac images, which can be used for any task of interest.
+ 
+ \section{Discussion}
+ The model in Zhang et.al's work\cite{zhuang2016multi} is simple compared with complex data driven deep neural network. From our understanding, the key factor that affects the performance of WHS is whether we can obtain a clear boundary in MRI image. Thus, a GAN model is a more reasonable direction in multi-modality, whose aim is to convert the low quality cardiac images into high quality level. 
 
+\begin{figure}
+	\centering
+	\includegraphics[width=0.5\textwidth]{images/Xiangyu_CycleGAN.png}
+	\caption{Unfolded CycleGAN\cite{zhu2017unpaired} training for CT to MR synthesis}
+	\label{Xiangyu_CycleGAN}
+\end{figure} 
 
 \setcounter{page}{1}
 
